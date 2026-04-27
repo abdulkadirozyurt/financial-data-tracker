@@ -1,0 +1,6 @@
+@FinancialDataTracker.API_HostAddress = http://localhost:5250
+
+GET {{FinancialDataTracker.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
