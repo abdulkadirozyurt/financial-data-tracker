@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/FinancialDataTracker.API/FinancialDataTracker.API.csproj" />
+    <Project Path="src/FinancialDataTracker.Business/FinancialDataTracker.Business.csproj" Id="093caa3d-2669-45b4-8bab-f12aa98d5b08" />
+    <Project Path="src/FinancialDataTracker.DataAccess/FinancialDataTracker.DataAccess.csproj" Id="0a3fc51a-6c5b-4a65-b92f-6467bbb31f1d" />
+    <Project Path="src/FinancialDataTracker.Entities/FinancialDataTracker.Entities.csproj" Id="bbc5d5f1-7531-4b96-95e0-cf7102e2de04" />
+    <Project Path="src/FinancialDataTracker.WebAPI/FinancialDataTracker.WebAPI.csproj" />
   </Folder>
 </Solution>
