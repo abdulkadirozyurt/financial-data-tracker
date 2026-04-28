@@ -49,7 +49,7 @@ public sealed class FinnhubService(IOptions<FinnhubApiCredentials> credentials, 
             Where(x => !string.IsNullOrWhiteSpace(x.Symbol) && !existingSymbols.Contains(x.Symbol))
             .Select(dto => new Stock
             {
-                StockSymbol = new StockDetails(dto.Symbol, dto.DisplaySymbol, dto.Description, dto.Currency)
+                StockSymbol = new StockDetails(dto.Symbol, dto.DisplaySymbol, dto.Description, dto.Currency,dto.Type)
             }).ToList();        
 
         await _context.Stocks.AddRangeAsync(newStocks);

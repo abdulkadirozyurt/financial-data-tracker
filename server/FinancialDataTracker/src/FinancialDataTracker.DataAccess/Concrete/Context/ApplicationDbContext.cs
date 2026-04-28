@@ -6,12 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FinancialDataTracker.DataAccess.Concrete.Context;
 
-public sealed class ApplicationDbContext : DbContext
+public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-    {
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Stock>(entity =>
@@ -25,6 +21,7 @@ public sealed class ApplicationDbContext : DbContext
                 sb.Property(s => s.DisplaySymbol).HasColumnName("DisplaySymbol").IsRequired(false);
                 sb.Property(s => s.Description).HasColumnName("Description").IsRequired(false);
                 sb.Property(s => s.Currency).HasColumnName("Currency").IsRequired(false);
+                sb.Property(s=>s.Type).HasColumnName("Type").IsRequired(false);
             });
         });
 

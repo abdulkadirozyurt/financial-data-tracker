@@ -13,4 +13,5 @@ public sealed record StockDetails(
     string Symbol,
     string DisplaySymbol,
     string Description,
-    string Currency);
+    string Currency,
+    string Type);

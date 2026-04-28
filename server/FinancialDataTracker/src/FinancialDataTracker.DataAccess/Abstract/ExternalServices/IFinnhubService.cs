@@ -1,4 +1,5 @@
-﻿using FinancialDataTracker.Core.DataAccess.ExternalServices;
+﻿
+using FinancialDataTracker.Core.DataAccess.ExternalServices;
 
 namespace FinancialDataTracker.DataAccess.Abstract.ExternalServices;
 

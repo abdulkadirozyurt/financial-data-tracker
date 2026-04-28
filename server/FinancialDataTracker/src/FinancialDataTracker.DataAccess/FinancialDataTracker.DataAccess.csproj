@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FinancialDataTracker.Core\FinancialDataTracker.Core.csproj" />
+    <ProjectReference Include="..\FinancialDataTracker.Core\FinancialDataTracker.Core.csproj" />
     <ProjectReference Include="..\FinancialDataTracker.Entities\FinancialDataTracker.Entities.csproj" />
   </ItemGroup>
 
