@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using FinancialDataTracker.Core.Exceptions;
 using FinancialDataTracker.DataAccess.Abstract.ExternalServices;
 using FinancialDataTracker.DataAccess.Concrete.Context;
 using FinancialDataTracker.DataAccess.Concrete.ExternalServices.Options;
@@ -9,18 +10,38 @@ using Microsoft.Extensions.Options;
 
 namespace FinancialDataTracker.DataAccess.Concrete.ExternalServices;
 
-public sealed class FinnhubService(IOptions<FinnhubApiCredentials> credentials, ApplicationDbContext context) : IFinnhubService
+public sealed class FinnhubService(
+    IOptions<FinnhubApiCredentials> credentials,
+    ApplicationDbContext context,
+    HttpClient httpClient
+    ) : IFinnhubService
 {
     private readonly ApplicationDbContext _context = context;
-    private readonly FinnhubApiCredentials _credentials = credentials.Value;
+    private readonly string BaseUrl = credentials.Value.BaseUrl;
+    private readonly string ApiKey = credentials.Value.ApiKey;
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    internal async Task<string> GetStockDetailsAsync()
+
+    public async Task<IReadOnlyList<StockDto>> GetStockDetailsAsync(string exchange, CancellationToken cancellationToken = default)
     {
-        using var client = new HttpClient();
-        var response = await client.GetAsync($"{_credentials.BaseUrl}/stock/symbol?exchange=US&token={_credentials.ApiKey}");
-        var stocksData = await response.Content.ReadAsStringAsync();
+        var endpoint = $"{BaseUrl}/stock/symbol?exchange={exchange}&token={ApiKey}";
+        using var response = await httpClient.GetAsync(endpoint, cancellationToken);
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        EnsureSuccess(response, content, "Stock symbols");
 
-        return stocksData;
+        return JsonSerializer.Deserialize<List<StockDto>>(content) ?? [];
+    }
+
+    public async Task<FinnhubQuoteDto> GetQuoteAsync(string symbol, CancellationToken cancellationToken = default)
+    {
+        var endpoint = $"{BaseUrl}/quote?symbol={symbol}&token={ApiKey}";
+        using var response = await httpClient.GetAsync(endpoint, cancellationToken) ;
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        EnsureSuccess(response, content, $"Quote for {symbol}");
+        
+        return JsonSerializer.Deserialize<FinnhubQuoteDto>(content, JsonOptions) 
+            ?? throw new ExternalServiceException($"Finnhub returned an empty quote response for {symbol}.");
     }
 
     public async Task WriteDatabaseAsync()
@@ -29,8 +50,8 @@ public sealed class FinnhubService(IOptions<FinnhubApiCredentials> credentials, 
         int unchangedCount = 0;
         int missingInDbCount = 0;
 
-        var stocksData = await GetStockDetailsAsync();
-        var dtos = JsonSerializer.Deserialize<List<StockDto>>(stocksData) ?? new List<StockDto>();
+        var stocksData = await GetStockDetailsAsync("US");
+        var dtos = stocksData ?? new List<StockDto>();
         var normalizedDtos = dtos
             .Where(x => !string.IsNullOrWhiteSpace(x.Symbol))
             .GroupBy(x => x.Symbol, StringComparer.OrdinalIgnoreCase)
@@ -42,7 +63,7 @@ public sealed class FinnhubService(IOptions<FinnhubApiCredentials> credentials, 
         var existingStocks = await _context.Stocks.ToListAsync();
 
         var existingBySymbol = existingStocks.ToDictionary(
-            x => x.StockSymbol.Symbol,
+            x => x.StockDetails.Symbol,
             StringComparer.OrdinalIgnoreCase);
 
 
@@ -55,7 +76,7 @@ public sealed class FinnhubService(IOptions<FinnhubApiCredentials> credentials, 
                 missingInDbCount++;
                 toInsert.Add(new Stock
                 {
-                    StockSymbol = new StockDetails(
+                    StockDetails = new StockDetails(
                         dto.Symbol,
                         dto.DisplaySymbol,
                         dto.Description,
@@ -66,10 +87,10 @@ public sealed class FinnhubService(IOptions<FinnhubApiCredentials> credentials, 
             }
 
             bool changed =
-                !string.Equals(existing.StockSymbol.DisplaySymbol, dto.DisplaySymbol, StringComparison.Ordinal) ||
-                !string.Equals(existing.StockSymbol.Description, dto.Description, StringComparison.Ordinal) ||
-                !string.Equals(existing.StockSymbol.Currency, dto.Currency, StringComparison.Ordinal) ||
-                !string.Equals(existing.StockSymbol.Type, dto.Type, StringComparison.Ordinal);
+                !string.Equals(existing.StockDetails.DisplaySymbol, dto.DisplaySymbol, StringComparison.Ordinal) ||
+                !string.Equals(existing.StockDetails.Description, dto.Description, StringComparison.Ordinal) ||
+                !string.Equals(existing.StockDetails.Currency, dto.Currency, StringComparison.Ordinal) ||
+                !string.Equals(existing.StockDetails.Type, dto.Type, StringComparison.Ordinal);
 
 
             if (!changed)
@@ -78,7 +99,7 @@ public sealed class FinnhubService(IOptions<FinnhubApiCredentials> credentials, 
                 continue;
             }
 
-            existing.StockSymbol = new StockDetails(
+            existing.StockDetails = new StockDetails(
                 dto.Symbol,
                 dto.DisplaySymbol,
                 dto.Description,
@@ -94,4 +115,19 @@ public sealed class FinnhubService(IOptions<FinnhubApiCredentials> credentials, 
         if (updatedCount > 0 || toInsert.Count > 0)
             await _context.SaveChangesAsync();
     }
+
+    public Task<IReadOnlyList<StockDto>> GetStockSymbolAsync(string exchange, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static void EnsureSuccess(HttpResponseMessage response, string content, string operation)
+    {
+        if (response.IsSuccessStatusCode)
+            return;
+        throw new ExternalServiceException($"Finnhub {operation} request failed with {(int)response.StatusCode}: {content}");
+    }
+
+
+
 }

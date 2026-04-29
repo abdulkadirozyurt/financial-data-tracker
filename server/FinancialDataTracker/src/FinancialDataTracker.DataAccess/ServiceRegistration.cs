@@ -23,7 +23,7 @@ public static class ServiceRegistration
 
 
         services.AddScoped<IFinnhubService, FinnhubService>();
-        services.AddScoped<IStockDal, StockDal>();
+        services.AddScoped<IStockRepository, StockRepository>();
 
 
         return services;
