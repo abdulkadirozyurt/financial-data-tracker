@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FinancialDataTracker.Entities.Concrete.DTOs;
+﻿namespace FinancialDataTracker.Entities.Concrete.DTOs;
 
 public sealed record PagedResultDto<T>(
     IReadOnlyList<T> Items,

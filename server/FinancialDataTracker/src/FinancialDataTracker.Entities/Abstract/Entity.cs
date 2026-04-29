@@ -1,5 +1,3 @@
-using System;
-
 namespace FinancialDataTracker.Entities.Abstract;
 
 public abstract class Entity
@@ -10,4 +8,8 @@ public abstract class Entity
     }
 
     public Guid Id { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
+    public DateTimeOffset? DeletedAt { get; set; }
+    public bool? IsDeleted { get; set; }
 }

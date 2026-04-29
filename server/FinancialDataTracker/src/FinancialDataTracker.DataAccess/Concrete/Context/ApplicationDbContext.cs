@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using FinancialDataTracker.Entities.Abstract;
 using FinancialDataTracker.Entities.Concrete;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinancialDataTracker.DataAccess.Concrete.Context;
@@ -66,8 +65,40 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         base.OnModelCreating(modelBuilder);
     }
 
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var entries = ChangeTracker.Entries<Entity>();
+
+        foreach (var entry in entries)
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Property(p => p.CreatedAt).CurrentValue = DateTimeOffset.UtcNow;
+            }
+            if (entry.State == EntityState.Modified)
+            {
+                if (entry.Property(p => p.IsDeleted).CurrentValue == true)
+                {
+                    entry.Property(p => p.DeletedAt).CurrentValue = DateTimeOffset.UtcNow;
+
+                }
+                else
+                {
+                    entry.Property(p => p.UpdatedAt).CurrentValue = DateTimeOffset.UtcNow;
+                }
+            }
+
+            if (entry.State == EntityState.Deleted)
+            {
+                throw new ArgumentException("You cannot delete an entity directly, use soft delete instead.");
+            }
+        }
+
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
     public DbSet<Stock> Stocks { get; set; }
     public DbSet<Watchlist> Watchlists { get; set; }
-
     public DbSet<StockQuoteSnapshot> StockQuoteSnapshots { get; set; }
 }

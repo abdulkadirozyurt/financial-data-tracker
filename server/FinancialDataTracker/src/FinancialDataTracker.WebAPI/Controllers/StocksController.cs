@@ -1,4 +1,4 @@
-﻿using FinancialDataTracker.Business.Abstract;
+using FinancialDataTracker.Business.Abstract;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinancialDataTracker.WebAPI.Controllers;
@@ -6,14 +6,15 @@ namespace FinancialDataTracker.WebAPI.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class StocksController(IStockService stockService) : ControllerBase
-{
-    private readonly IStockService _stockService = stockService;
-
+{    
     [HttpGet]
-    public async Task<IActionResult> GetStockData()
+    public async Task<IActionResult> GetStockData(
+        [FromQuery] string? search,
+        [FromQuery] int pageNumber=1,
+        [FromQuery] int pageSize=20,
+        CancellationToken cancellationToken = default)
     {
-
-        await _stockService.WriteDatabaseAsync();
-        return Ok("Stock data will be here");
+        var result = await stockService.GetStockListAsync(search, pageNumber, pageSize, cancellationToken);
+        return Ok(result);
     }
 }
