@@ -1,6 +1,5 @@
 ﻿using FinancialDataTracker.Entities.Abstract;
 using FinancialDataTracker.Entities.Concrete;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinancialDataTracker.DataAccess.Concrete.Context;
