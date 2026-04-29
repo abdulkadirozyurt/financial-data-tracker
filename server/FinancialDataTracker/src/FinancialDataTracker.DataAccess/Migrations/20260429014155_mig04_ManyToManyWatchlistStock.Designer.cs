@@ -69,7 +69,7 @@ namespace FinancialDataTracker.DataAccess.Migrations
 
             modelBuilder.Entity("FinancialDataTracker.Entities.Concrete.Stock", b =>
                 {
-                    b.OwnsOne("FinancialDataTracker.Entities.Concrete.StockDetails", "StockSymbol", b1 =>
+                    b.OwnsOne("FinancialDataTracker.Entities.Concrete.StockDetails", "StockDetails", b1 =>
                         {
                             b1.Property<Guid>("StockId")
                                 .HasColumnType("uniqueidentifier");
@@ -107,7 +107,7 @@ namespace FinancialDataTracker.DataAccess.Migrations
                                 .HasForeignKey("StockId");
                         });
 
-                    b.Navigation("StockSymbol")
+                    b.Navigation("StockDetails")
                         .IsRequired();
                 });
 

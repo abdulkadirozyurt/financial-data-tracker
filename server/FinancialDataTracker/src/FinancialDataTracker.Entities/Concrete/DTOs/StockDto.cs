@@ -11,7 +11,7 @@ public sealed record StockDto
     public string Symbol { get; set; }
 
     [JsonPropertyName("displaySymbol")]
-    public      string DisplaySymbol { get; set; }
+    public string DisplaySymbol { get; set; }
 
     [JsonPropertyName("description")]
     public string Description { get; set; }

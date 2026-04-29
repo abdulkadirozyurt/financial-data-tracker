@@ -13,7 +13,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         modelBuilder.Entity<Stock>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.OwnsOne(s => s.StockSymbol, sb =>
+
+            entity.OwnsOne(s => s.StockDetails, sb =>
             {
                 sb.Property(s => s.Symbol).HasColumnName("Symbol").IsRequired(true);
                 sb.HasIndex(s => s.Symbol).IsUnique();
@@ -24,11 +25,16 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
                 sb.Property(s => s.Type).HasColumnName("Type").IsRequired(false);
             });
 
-
             entity
                 .HasMany(s => s.Watchlists)
                 .WithMany(w => w.Stocks)
                 .UsingEntity("WatchlistStock");
+
+            entity.
+                HasMany(s => s.QuoteSnapshots)
+                .WithOne(q => q.Stock)
+                .HasForeignKey(q => q.StockId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Watchlist>(entity =>
@@ -37,9 +43,31 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             entity.Property(e => e.Name).HasColumnName("Name").IsRequired(true);
         });
 
+        modelBuilder.Entity<StockQuoteSnapshot>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.StockId, e.FetchedAtUtc });
+            entity.HasIndex(e => new { e.Symbol, e.FetchedAtUtc });
+
+            entity.OwnsOne(e => e.Quote, eq =>
+            {
+                eq.Property(e => e.CurrentPrice).HasPrecision(18, 4);
+                eq.Property(e => e.OpenPrice).HasPrecision(18, 4);
+                eq.Property(e => e.HighPrice).HasPrecision(18, 4);
+                eq.Property(e => e.LowPrice).HasPrecision(18, 4);
+                eq.Property(e => e.PreviousClosePrice).HasPrecision(18, 4);
+                eq.Property(e => e.Change).HasPrecision(18, 4);
+                eq.Property(e => e.PercentChange).HasPrecision(18, 4);
+                eq.Property(e => e.FinnhubTimestampUtc).IsRequired(false);
+            });
+        });
+
+
         base.OnModelCreating(modelBuilder);
     }
 
     public DbSet<Stock> Stocks { get; set; }
     public DbSet<Watchlist> Watchlists { get; set; }
+
+    public DbSet<StockQuoteSnapshot> StockQuoteSnapshots { get; set; }
 }

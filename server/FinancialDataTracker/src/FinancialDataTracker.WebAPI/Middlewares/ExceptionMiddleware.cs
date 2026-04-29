@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FinancialDataTracker.Core.Exceptions;
+using System;
 using System.Net;
 using System.Text.Json;
 
@@ -29,6 +30,9 @@ public sealed class ExceptionMiddleware(
         {
             ArgumentException => (int)HttpStatusCode.BadRequest,
             InvalidOperationException => (int)HttpStatusCode.BadRequest,
+            NotFoundException => (int)HttpStatusCode.NotFound,
+            ConflictException => (int)HttpStatusCode.Conflict,
+            ExternalServiceException => (int)HttpStatusCode.BadGateway,
             _ => (int)HttpStatusCode.InternalServerError
         };
 

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinancialDataTracker.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260428221332_mig03_TypeColumnAddedToStockEntity")]
-    partial class mig03_TypeColumnAddedToStockEntity
+    [Migration("20260429133247_mig04_StockDetailsNullable")]
+    partial class mig04_StockDetailsNullable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,6 +36,37 @@ namespace FinancialDataTracker.DataAccess.Migrations
                     b.ToTable("Stocks");
                 });
 
+            modelBuilder.Entity("FinancialDataTracker.Entities.Concrete.Watchlist", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Watchlists");
+                });
+
+            modelBuilder.Entity("WatchlistStock", b =>
+                {
+                    b.Property<Guid>("StocksId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("WatchlistsId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("StocksId", "WatchlistsId");
+
+                    b.HasIndex("WatchlistsId");
+
+                    b.ToTable("WatchlistStock");
+                });
+
             modelBuilder.Entity("FinancialDataTracker.Entities.Concrete.Stock", b =>
                 {
                     b.OwnsOne("FinancialDataTracker.Entities.Concrete.StockDetails", "StockDetails", b1 =>
@@ -52,10 +83,12 @@ namespace FinancialDataTracker.DataAccess.Migrations
                                 .HasColumnName("Description");
 
                             b1.Property<string>("DisplaySymbol")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(max)")
                                 .HasColumnName("DisplaySymbol");
 
                             b1.Property<string>("Symbol")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(450)")
                                 .HasColumnName("Symbol");
 
@@ -66,8 +99,7 @@ namespace FinancialDataTracker.DataAccess.Migrations
                             b1.HasKey("StockId");
 
                             b1.HasIndex("Symbol")
-                                .IsUnique()
-                                .HasFilter("[Symbol] IS NOT NULL");
+                                .IsUnique();
 
                             b1.ToTable("Stocks");
 
@@ -76,6 +108,21 @@ namespace FinancialDataTracker.DataAccess.Migrations
                         });
 
                     b.Navigation("StockDetails")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WatchlistStock", b =>
+                {
+                    b.HasOne("FinancialDataTracker.Entities.Concrete.Stock", null)
+                        .WithMany()
+                        .HasForeignKey("StocksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FinancialDataTracker.Entities.Concrete.Watchlist", null)
+                        .WithMany()
+                        .HasForeignKey("WatchlistsId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

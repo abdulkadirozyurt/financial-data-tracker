@@ -7,6 +7,7 @@ using FinancialDataTracker.DataAccess.Concrete.ExternalServices.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 
 namespace FinancialDataTracker.DataAccess;
 
@@ -14,6 +15,7 @@ public static class ServiceRegistration
 {
     public static IServiceCollection AddDataAccessServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddHttpClient();
         services.Configure<FinnhubApiCredentials>(configuration.GetSection("FinnhubApiCredentials"));
 
         services.AddDbContext<ApplicationDbContext>(options =>
