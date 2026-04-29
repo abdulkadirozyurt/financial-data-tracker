@@ -1,3 +1,4 @@
+using Company.ClassLibrary1;
 using FinancialDataTracker.Business;
 using FinancialDataTracker.Business.Abstract;
 using FinancialDataTracker.Business.Concrete;
@@ -11,7 +12,7 @@ builder.Services.AddHostedService<StockSyncHostedService>();
 builder.Services.AddDataAccessServices(builder.Configuration);
 builder.Services.AddBusinessServices();
 
-builder.Services.AddScoped<IStockService,StockManager>();
+
 
 
 builder.Services.AddControllers();
@@ -22,6 +23,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
