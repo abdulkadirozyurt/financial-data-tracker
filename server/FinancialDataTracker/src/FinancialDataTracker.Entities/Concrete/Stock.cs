@@ -7,6 +7,7 @@ namespace FinancialDataTracker.Entities.Concrete;
 public sealed class Stock : Entity
 {
     public StockDetails StockSymbol { get; set; } = default!;
+    public List<Watchlist> Watchlists { get; set; } = new();
 }
 
 public sealed record StockDetails(
