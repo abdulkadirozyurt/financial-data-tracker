@@ -15,10 +15,10 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             entity.HasKey(e => e.Id);
             entity.OwnsOne(s => s.StockSymbol, sb =>
             {
-                sb.Property(s => s.Symbol).HasColumnName("Symbol").IsRequired(false);
+                sb.Property(s => s.Symbol).HasColumnName("Symbol").IsRequired(true);
                 sb.HasIndex(s => s.Symbol).IsUnique();
 
-                sb.Property(s => s.DisplaySymbol).HasColumnName("DisplaySymbol").IsRequired(false);
+                sb.Property(s => s.DisplaySymbol).HasColumnName("DisplaySymbol").IsRequired(true);
                 sb.Property(s => s.Description).HasColumnName("Description").IsRequired(false);
                 sb.Property(s => s.Currency).HasColumnName("Currency").IsRequired(false);
                 sb.Property(s=>s.Type).HasColumnName("Type").IsRequired(false);

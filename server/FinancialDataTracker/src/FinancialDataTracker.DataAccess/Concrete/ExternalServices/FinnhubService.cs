@@ -25,36 +25,73 @@ public sealed class FinnhubService(IOptions<FinnhubApiCredentials> credentials, 
 
     public async Task WriteDatabaseAsync()
     {
+        int updatedCount = 0;
+        int unchangedCount = 0;
+        int missingInDbCount = 0;
+
         var stocksData = await GetStockDetailsAsync();
         var dtos = JsonSerializer.Deserialize<List<StockDto>>(stocksData) ?? new List<StockDto>();
-
-
-        #region duplicate check
-        
-        var symbols = dtos
-            .Select(x => x.Symbol)
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Distinct()
+        var normalizedDtos = dtos
+            .Where(x => !string.IsNullOrWhiteSpace(x.Symbol))
+            .GroupBy(x => x.Symbol, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
             .ToList();
 
-        var existingSymbols = await _context.Stocks
-            .Select(x => x.StockSymbol.Symbol)
-            .ToListAsync();        
+        List<Stock> toInsert = new List<Stock>();
 
-        #endregion
+        var existingStocks = await _context.Stocks.ToListAsync();
+
+        var existingBySymbol = existingStocks.ToDictionary(
+            x => x.StockSymbol.Symbol,
+            StringComparer.OrdinalIgnoreCase);
 
 
 
-        var newStocks = dtos.
-            Where(x => !string.IsNullOrWhiteSpace(x.Symbol) && !existingSymbols.Contains(x.Symbol))
-            .Select(dto => new Stock
+        foreach (var dto in normalizedDtos)
+        {
+            if (!existingBySymbol.TryGetValue(dto.Symbol, out var existing))
             {
-                StockSymbol = new StockDetails(dto.Symbol, dto.DisplaySymbol, dto.Description, dto.Currency,dto.Type)
-            }).ToList();        
+                // Şu anki verine göre beklenmiyor, ama güvenlik için sayalım
+                missingInDbCount++;
+                toInsert.Add(new Stock
+                {
+                    StockSymbol = new StockDetails(
+                        dto.Symbol,
+                        dto.DisplaySymbol,
+                        dto.Description,
+                        dto.Currency,
+                        dto.Type)
+                });
+                continue;
+            }
 
-        await _context.Stocks.AddRangeAsync(newStocks);
-        await _context.SaveChangesAsync();
+            bool changed =
+                !string.Equals(existing.StockSymbol.DisplaySymbol, dto.DisplaySymbol, StringComparison.Ordinal) ||
+                !string.Equals(existing.StockSymbol.Description, dto.Description, StringComparison.Ordinal) ||
+                !string.Equals(existing.StockSymbol.Currency, dto.Currency, StringComparison.Ordinal) ||
+                !string.Equals(existing.StockSymbol.Type, dto.Type, StringComparison.Ordinal);
+
+
+            if (!changed)
+            {
+                unchangedCount++;
+                continue;
+            }
+
+            existing.StockSymbol = new StockDetails(
+                dto.Symbol,
+                dto.DisplaySymbol,
+                dto.Description,
+                dto.Currency,
+                dto.Type);
+
+            updatedCount++;
+        }
+
+        if (toInsert.Count > 0)
+            await _context.Stocks.AddRangeAsync(toInsert);
+
+        if (updatedCount > 0 || toInsert.Count > 0)
+            await _context.SaveChangesAsync();
     }
-
-    
 }
