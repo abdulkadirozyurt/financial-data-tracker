@@ -99,6 +99,37 @@ Configuration keys:
 
 Swagger and OpenAPI mappings are enabled in Development mode.
 
+## Running With Docker
+
+The full stack can be started from the repository root with Docker Compose. The compose setup includes SQL Server, the ASP.NET Core API, and the Angular client.
+
+PowerShell:
+
+```powershell
+$env:FINNHUB_API_KEY="YOUR_API_KEY"
+docker compose up --build -d
+```
+
+Bash / zsh:
+
+```bash
+export FINNHUB_API_KEY="YOUR_API_KEY"
+docker compose up --build -d
+```
+
+Windows CMD:
+
+```cmd
+set FINNHUB_API_KEY=YOUR_API_KEY
+docker compose up --build -d
+```
+
+After startup:
+
+- Client: `http://localhost:4200`
+- API: `http://localhost:5250`
+- Swagger: `http://localhost:5250/swagger`
+
 ## Design Pattern
 
 The project uses the Repository Pattern for database access.
