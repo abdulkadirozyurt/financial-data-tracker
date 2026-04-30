@@ -1,15 +1,36 @@
 using FinancialDataTracker.Business.Abstract;
 using FinancialDataTracker.DataAccess.Abstract;
+using FinancialDataTracker.Entities.Concrete;
 using FinancialDataTracker.Entities.Concrete.DTOs;
+using System.Linq.Expressions;
 
 namespace FinancialDataTracker.Business.Concrete;
 
-public sealed class StockManager(IStockRepository stockDal) : IStockService
+public sealed class StockManager(IStockRepository stockRepository) : IStockService
 {
     public async Task<PagedResultDto<StockListItemDto>> GetStockListAsync(string? search, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        var totalCount = await stockDal.CountAsync(search, cancellationToken);
-        var stocks = await stockDal.GetPagedAsync(search, pageNumber, pageSize, cancellationToken);
+        search = search?.Trim();
+        Expression<Func<Stock, bool>>? filter = null;
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            filter = x =>
+                x.StockDetails.Symbol.Contains(search) ||
+                x.StockDetails.DisplaySymbol.Contains(search) ||
+                (x.StockDetails.Description != null && x.StockDetails.Description.Contains(search)) ||
+                (x.StockDetails.Type != null && x.StockDetails.Type.Contains(search)) ||
+                (x.StockDetails.Currency != null && x.StockDetails.Currency.Contains(search));
+        }
+
+        var totalCount = await stockRepository.CountAsync(filter, cancellationToken);
+
+        var stocks = await stockRepository.GetPagedAsync(
+            filter,
+            x => x.StockDetails.Symbol,
+            pageNumber, 
+            pageSize, 
+            cancellationToken);
 
         var resultList = new List<StockListItemDto>();
         foreach (var item in stocks)

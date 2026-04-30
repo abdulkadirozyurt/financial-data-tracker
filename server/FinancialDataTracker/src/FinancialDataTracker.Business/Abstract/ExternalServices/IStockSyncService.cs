@@ -4,5 +4,5 @@ namespace FinancialDataTracker.Business.Abstract.ExternalServices;
 
 public interface IStockSyncService: IExternalService
 {
-    Task SyncStockDataAsync(string? exchange);
+    Task SyncStockDataAsync(string? exchange="US");
 }
