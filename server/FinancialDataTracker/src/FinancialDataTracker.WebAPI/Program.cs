@@ -1,7 +1,5 @@
 using Company.ClassLibrary1;
 using FinancialDataTracker.Business;
-using FinancialDataTracker.Business.Abstract;
-using FinancialDataTracker.Business.Concrete;
 using FinancialDataTracker.DataAccess;
 using FinancialDataTracker.WebAPI.Schedule;
 
@@ -12,12 +10,8 @@ builder.Services.AddHostedService<StockSyncHostedService>();
 builder.Services.AddDataAccessServices(builder.Configuration);
 builder.Services.AddBusinessServices();
 
-
-
-
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -37,7 +31,4 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
-
 app.Run();
-
