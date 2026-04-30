@@ -24,6 +24,7 @@ public static class ServiceRegistration
 
         services.AddScoped<IFinnhubService, FinnhubService>();
         services.AddScoped<IStockRepository, StockRepository>();
+        services.AddScoped<IWatchlistRepository, WatchlistRepository>();
 
 
         return services;

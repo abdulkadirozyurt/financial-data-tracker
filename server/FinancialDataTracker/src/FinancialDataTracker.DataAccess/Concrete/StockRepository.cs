@@ -13,6 +13,11 @@ public sealed class StockRepository(ApplicationDbContext context) : Repository<S
 {
     public async Task<IReadOnlyList<Stock>> GetAllForSyncAsync(CancellationToken cancellationToken = default)
     {
-        return await context.Stocks.AsTracking().ToListAsync();
+        return await context.Stocks.ToListAsync();
+    }
+
+    public async Task<Stock?> GetTrackedBySymbolAsync(string symbol, CancellationToken cancellationToken = default)
+    {
+        return await context.Stocks.Where(s => s.StockDetails.Symbol == symbol.Trim().ToUpper()).FirstOrDefaultAsync(cancellationToken);
     }
 }

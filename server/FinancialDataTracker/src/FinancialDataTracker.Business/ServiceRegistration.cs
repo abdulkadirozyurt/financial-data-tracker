@@ -19,6 +19,7 @@ public static class ServiceRegistration
     {
         services.AddScoped<IStockSyncService, StockSyncService>();
         services.AddScoped<IStockService, StockManager>();
+        services.AddScoped<IWatchlistService, WatchlistManager>();
 
         return services;
     }
