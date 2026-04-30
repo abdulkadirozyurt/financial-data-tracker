@@ -4,6 +4,7 @@ using FinancialDataTracker.DataAccess.Abstract;
 using FinancialDataTracker.DataAccess.Abstract.ExternalServices;
 using FinancialDataTracker.Entities.Concrete;
 using FinancialDataTracker.Entities.Concrete.DTOs;
+using System.Linq;
 
 namespace FinancialDataTracker.Business.Concrete;
 
@@ -74,6 +75,21 @@ public sealed class QuoteSnapshotManager(
         {
             await quoteSnapshotRepository.AddRangeAsync(snapshotsToInsert, cancellationToken);
             await quoteSnapshotRepository.SaveChangesAsync(cancellationToken);
+
+            snapshotDtos = snapshotsToInsert
+                .Select(snapshot => new QuoteSnapshotDto(
+                    snapshot.Id,
+                    snapshot.Symbol,
+                    snapshot.Quote.CurrentPrice,
+                    snapshot.Quote.OpenPrice,
+                    snapshot.Quote.HighPrice,
+                    snapshot.Quote.LowPrice,
+                    snapshot.Quote.PreviousClosePrice,
+                    snapshot.Quote.Change,
+                    snapshot.Quote.PercentChange,
+                    snapshot.Quote.FinnhubTimestampUtc,
+                    snapshot.FetchedAtUtc))
+                .ToList();
         }
 
         return new SyncWatchlistQuotesResultDto(
