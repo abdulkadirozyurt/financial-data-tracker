@@ -14,6 +14,7 @@ public static class ServiceRegistration
         services.AddScoped<IStockService, StockManager>();
         services.AddScoped<IQuoteSnapshotService, QuoteSnapshotManager>();
         services.AddScoped<IWatchlistService, WatchlistManager>();
+        services.AddScoped<IAnalyticsService, AnalyticsManager>();
 
         return services;
     }

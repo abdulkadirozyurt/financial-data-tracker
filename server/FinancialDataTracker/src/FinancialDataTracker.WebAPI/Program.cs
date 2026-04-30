@@ -6,6 +6,7 @@ using FinancialDataTracker.WebAPI.Schedule;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHostedService<StockSyncHostedService>();
+builder.Services.AddHostedService<QuoteSnapshotSyncHostedService>();
 
 builder.Services.AddDataAccessServices(builder.Configuration);
 builder.Services.AddBusinessServices();
@@ -20,7 +21,6 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapControllers();
