@@ -6,7 +6,7 @@ namespace FinancialDataTracker.WebAPI.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class StocksController(IStockService stockService) : ControllerBase
-{    
+{
     [HttpGet]
     public async Task<IActionResult> GetStockData(
         [FromQuery] string? search,

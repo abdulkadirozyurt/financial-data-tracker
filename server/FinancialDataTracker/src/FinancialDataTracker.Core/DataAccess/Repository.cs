@@ -8,6 +8,8 @@ where TEntity : class
 where TContext : DbContext
 {
     private readonly DbSet<TEntity> _set = context.Set<TEntity>();
+
+
     public async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         await _set.AddAsync(entity, cancellationToken);
@@ -25,12 +27,12 @@ where TContext : DbContext
 
     public async Task<IReadOnlyList<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
     {
-        return await _set.Where(filter ?? (_ => true)).ToListAsync(cancellationToken);
+        return await _set.Where(filter ?? (_ => true)).AsNoTracking().ToListAsync(cancellationToken);
     }
 
     public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
     {
-        return await _set.Where(filter).SingleOrDefaultAsync(cancellationToken);
+        return await _set.Where(filter).AsNoTracking().SingleOrDefaultAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<TEntity>> GetPagedAsync<TKey>(
@@ -47,6 +49,7 @@ where TContext : DbContext
         return await query.OrderBy(orderBy)
                      .Skip((pageNumber - 1) * pageSize)
                      .Take(pageSize)
+                     .AsNoTracking()
                      .ToListAsync(cancellationToken);
     }
 

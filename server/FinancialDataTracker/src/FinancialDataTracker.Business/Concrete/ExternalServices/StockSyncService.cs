@@ -35,7 +35,7 @@ public sealed class StockSyncService(
 
         List<Stock> toInsert = new List<Stock>();
 
-        var existingStocks = await stockRepository.GetAllAsync();
+        var existingStocks = await stockRepository.GetAllForSyncAsync();
 
         var existingBySymbol = existingStocks.ToDictionary(
             x => x.StockDetails.Symbol,

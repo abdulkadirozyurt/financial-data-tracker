@@ -3,4 +3,7 @@ using FinancialDataTracker.Entities.Concrete;
 
 namespace FinancialDataTracker.DataAccess.Abstract;
 
-public interface IStockRepository : IRepository<Stock> { }
+public interface IStockRepository : IRepository<Stock>
+{
+    Task<IReadOnlyList<Stock>> GetAllForSyncAsync(CancellationToken cancellationToken = default);
+}
