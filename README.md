@@ -2,27 +2,59 @@
 
 ## Purpose
 
-Financial Data Tracker is a small internal finance tool for tracking stock watchlists and quote snapshots.
+Financial Data Tracker is a small internal finance tool built for the Rasyonet backend case study.
 
-The MVP goal is:
+The current product direction is a stock watchlist workflow:
 
 - sync a US stock catalog from Finnhub
 - persist stock and watchlist data in SQL Server
 - expose REST endpoints through ASP.NET Core Web API
-- store quote snapshots for selected stocks
-- provide a simple analytical view such as top gainers / top losers
+- let users create watchlists and attach tracked stocks
 
-This repository is currently being completed incrementally. The stock listing flow is implemented first, while sync, watchlist, quote snapshot, and analytics flows are still in progress.
+The intended end state of the MVP is to also store quote snapshots and expose a simple analytics view such as top gainers / top losers.
+
+## API Choice
+
+This project uses **Finnhub** as the external financial data source.
+
+Reason:
+
+- practical free tier for an internship case study
+- simple stock symbol catalog endpoint
+- simple quote endpoint
+- enough scope for a small internal finance tool without overbuilding
+
+Current Finnhub usage in the codebase:
+
+- `/stock/symbol` for stock catalog synchronization
+- `/quote` support exists in the client service layer, but quote snapshot API flow is not finished yet
+
+## Database Choice
+
+This project uses **SQL Server** with **Entity Framework Core**.
+
+Reason:
+
+- it fits the current layered .NET backend structure well
+- EF Core migrations are already in place
+- stock, watchlist, and quote snapshot entities map naturally to a relational model
+
+Core persisted entities:
+
+- `Stock`
+- `Watchlist`
+- `StockQuoteSnapshot`
 
 ## Tech Stack
 
 - .NET 10 Web API
+- ASP.NET Core
 - Entity Framework Core
 - SQL Server
 - Finnhub API
 - Swagger / OpenAPI
 
-Solution structure:
+Backend solution structure:
 
 - `server/FinancialDataTracker/src/FinancialDataTracker.WebAPI`
 - `server/FinancialDataTracker/src/FinancialDataTracker.Business`
@@ -30,52 +62,37 @@ Solution structure:
 - `server/FinancialDataTracker/src/FinancialDataTracker.Entities`
 - `server/FinancialDataTracker/src/FinancialDataTracker.Core`
 
-## Why Finnhub?
-
-Finnhub was chosen because it provides a practical free tier and exposes the two endpoints that fit this MVP best:
-
-- stock catalog data
-- quote data
-
-For this project, the intended Finnhub usage is:
-
-- `/stock/symbol` for syncing stock symbols
-- `/quote` for getting quote snapshots
-
-This keeps the MVP small, realistic, and aligned with the assessment requirements.
-
-## MVP Features
-
-Target MVP features:
-
-- sync US stock catalog from Finnhub
-- search stored stocks
-- create watchlists
-- add and remove stocks from watchlists
-- sync quote snapshots for a watchlist
-- view top gainers and top losers from the latest stored snapshots
-
-Current implementation status:
-
-- project structure exists
-- Entity Framework Core context exists
-- Swagger is configured
-- repository pattern is implemented for stock listing
-- business service mapping for paged stock listing is implemented
-- `GET /api/stocks` returns paged stock data
-- watchlist, quote sync, and analytics flows are still incomplete
-
 ## Design Pattern
 
-This project uses the Repository Pattern to isolate EF Core query details from business services.
+This project uses the **Repository Pattern**.
 
-The reason for this choice is straightforward:
+Purpose:
 
-- controllers should not know how EF queries are written
-- business services should express use cases, not persistence details
-- database access should be centralized and reusable
+- isolate EF Core query details from business services
+- keep controllers free of persistence logic
+- make business services express use cases instead of database access details
 
-The repository implementation contains an inline comment that explicitly marks where the pattern is being applied, matching the assessment requirement.
+The repository implementation contains an inline comment explicitly naming the pattern, which was a requirement in the case study.
+
+## Current Status
+
+Implemented backend capabilities:
+
+- layered project structure
+- SQL Server persistence with EF Core migrations
+- stock catalog synchronization service using Finnhub
+- paged stock listing endpoint
+- watchlist create/read/add/remove service flow
+- watchlist controller endpoints
+- Swagger wiring
+- exception middleware
+
+Still incomplete:
+
+- quote snapshot sync endpoint
+- analytics/top movers endpoint
+- frontend integration
+- final cleanup of some warnings and middleware polish
 
 ## Setup
 
@@ -85,11 +102,11 @@ The repository implementation contains an inline comment that explicitly marks w
 - SQL Server or LocalDB
 - a Finnhub API key
 
-### Local configuration
+### Local Configuration
 
-Do not store real secrets in tracked files.
+Do not commit real secrets.
 
-Use `appsettings.Development.json`, user-secrets, or environment variables for local values.
+Use `appsettings.Development.json`, `user-secrets`, or environment variables for local values.
 
 Example `appsettings.json` placeholders:
 
@@ -105,7 +122,7 @@ Example `appsettings.json` placeholders:
 }
 ```
 
-Example user-secrets commands:
+Example `user-secrets` commands:
 
 ```powershell
 dotnet user-secrets set "FinnhubApiCredentials:ApiKey" "YOUR_KEY" --project .\server\FinancialDataTracker\src\FinancialDataTracker.WebAPI
@@ -141,53 +158,46 @@ Run the API:
 dotnet run --project .\src\FinancialDataTracker.WebAPI
 ```
 
-Swagger should be available when running in Development mode.
+Swagger / OpenAPI is configured for Development mode.
 
-## API Endpoints
+Important note:
 
-### Current endpoints in the repository
+- `Program.cs` currently maps controllers only inside the Development block.
+- That means local development is the expected run mode right now.
+
+## Current API
+
+Implemented endpoints in the current repository:
 
 - `GET /api/stocks?search=AAPL&pageNumber=1&pageSize=20`
-- `POST /api/watchlists/add`
-
-Current behavior:
-
-- `GET /api/stocks` returns paged stock list data through `IStockService` and `IStockRepository`
-- `POST /api/watchlists/add` is still a placeholder
-
-### Intended MVP endpoints
-
-- `POST /api/stocks/sync?exchange=US`
-- `GET /api/stocks?search=AAPL&page=1&pageSize=10`
-- `POST /api/watchlists`
+- `GET /api/watchlists`
 - `GET /api/watchlists/{id}`
+- `POST /api/watchlists`
 - `POST /api/watchlists/{id}/stocks/{symbol}`
 - `DELETE /api/watchlists/{id}/stocks/{symbol}`
+
+Behavior summary:
+
+- `GET /api/stocks` returns paged stock data from persisted records
+- watchlist endpoints allow create, read, add stock, and remove stock flows
+
+## Planned API
+
+These are part of the intended MVP but are not finished yet:
+
+- `POST /api/stocks/sync?exchange=US` as a manual sync endpoint
 - `POST /api/quotes/sync/watchlists/{watchlistId}`
 - `GET /api/analytics/top-movers?direction=gainers&limit=5`
 - `GET /api/analytics/top-movers?direction=losers&limit=5`
 
-## Database Choice
-
-SQL Server is used for this project.
-
-Reason:
-
-- it already fits the existing EF Core setup
-- it supports the current migration flow cleanly
-- it is a practical choice for a layered .NET backend project
-
-Core persisted entities are intended to include:
-
-- `Stock`
-- `Watchlist`
-- `StockQuoteSnapshot`
+At the moment, stock catalog sync is driven by the hosted service rather than a manual controller endpoint.
 
 ## Trade-offs
 
-- no authentication is included in the MVP scope
-- portfolio quantity / P&L tracking is intentionally out of scope
-- quote sync is intended to be manually triggered so API usage stays predictable
-- the frontend is planned after the backend MVP is stabilized
-- some endpoints listed above are target endpoints and are not fully implemented yet
-- controller and sync behavior still need to be aligned with the final MVP flow
+- authentication is intentionally out of scope
+- portfolio quantity / P&L tracking is out of scope
+- quote snapshot and analytics flows are planned but not finished yet
+- the backend is the priority; the Angular client is bonus scope
+- some infrastructure is functional but still needs cleanup before final submission polish
+
+This is intentionally being kept as a small, focused internal tool rather than a broad financial platform.
