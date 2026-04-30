@@ -1,6 +1,6 @@
 services:
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2025-latest
     container_name: financial-data-tracker-sqlserver
     environment:
       ACCEPT_EULA: "Y"
@@ -16,6 +16,8 @@ services:
       timeout: 5s
       retries: 12
       start_period: 30s
+    networks:
+      - financial-data-tracker-network
 
   server:
     build:
@@ -33,6 +35,8 @@ services:
         condition: service_healthy
     ports:
       - "5250:8080"
+    networks:
+      - financial-data-tracker-network
 
   client:
     build:
@@ -43,6 +47,12 @@ services:
       - server
     ports:
       - "4200:80"
+    networks:
+      - financial-data-tracker-network
 
 volumes:
   sqlserver-data:
+
+networks:
+  financial-data-tracker-network:
+    driver: bridge

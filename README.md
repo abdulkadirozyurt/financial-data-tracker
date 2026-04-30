@@ -110,5 +110,3 @@ This keeps persistence concerns isolated and lets business services focus on app
 ## Current Scope
 
 The backend currently focuses on stock catalog data, watchlists, quote snapshots, and top mover analytics.
-
-Authentication, portfolio quantity tracking, realized/unrealized P&L, and frontend integration are outside the current backend scope.
