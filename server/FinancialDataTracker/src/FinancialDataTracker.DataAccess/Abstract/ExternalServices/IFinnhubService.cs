@@ -5,6 +5,6 @@ namespace FinancialDataTracker.DataAccess.Abstract.ExternalServices;
 
 public interface IFinnhubService : IExternalService
 {
-    Task<IReadOnlyList<StockDto>> GetStockDetailsAsync(string exchange, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<StockDto>> GetStockDetailsAsync(string? exchange="US", CancellationToken cancellationToken = default);
     Task<FinnhubQuoteDto> GetQuoteAsync(string symbol, CancellationToken cancellationToken = default);
 }

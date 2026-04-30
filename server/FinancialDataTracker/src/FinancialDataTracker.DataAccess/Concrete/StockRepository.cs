@@ -30,7 +30,7 @@ public sealed class StockRepository(ApplicationDbContext dbContext) : IStockRepo
 
     public async Task<IReadOnlyList<Stock>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.Stocks.AsNoTracking().ToListAsync(cancellationToken);
+        return await dbContext.Stocks.ToListAsync(cancellationToken);
     }
 
     public async Task<Stock?> GetBySymbolAsync(string symbol, CancellationToken cancellationToken = default)

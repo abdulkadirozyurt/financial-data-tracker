@@ -12,7 +12,7 @@ public sealed class StockSyncService(
     IStockRepository stockRepository,
     ILogger<StockSyncService> logger) : IStockSyncService
 {
-    public async Task SyncStockDataAsync()
+    public async Task SyncStockDataAsync(string? exhange)
     {
         logger.LogInformation("US stock catalog sync started.");
 
@@ -20,7 +20,7 @@ public sealed class StockSyncService(
         int unchangedCount = 0;
         int newStockCount = 0;
 
-        var stocksData = await finnhubService.GetStockDetailsAsync("US");
+        var stocksData = await finnhubService.GetStockDetailsAsync(exhange);
         var dtos = stocksData ?? new List<StockDto>();
         var normalizedDtos = dtos
             .Where(x => !string.IsNullOrWhiteSpace(x.Symbol))

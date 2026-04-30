@@ -22,7 +22,7 @@ public sealed class FinnhubService(
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
 
-    public async Task<IReadOnlyList<StockDto>> GetStockDetailsAsync(string exchange = "US", CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<StockDto>> GetStockDetailsAsync(string? exchange = "US", CancellationToken cancellationToken = default)
     {
         var endpoint = $"{BaseUrl}/stock/symbol?exchange={exchange}&token={ApiKey}";
         using var response = await httpClient.GetAsync(endpoint, cancellationToken);
@@ -42,7 +42,7 @@ public sealed class FinnhubService(
 
         return JsonSerializer.Deserialize<FinnhubQuoteDto>(content, JsonOptions)
             ?? throw new ExternalServiceException($"Finnhub returned an empty quote response for {symbol}.");
-    }    
+    }
 
     private static void EnsureSuccess(HttpResponseMessage response, string content, string operation)
     {
