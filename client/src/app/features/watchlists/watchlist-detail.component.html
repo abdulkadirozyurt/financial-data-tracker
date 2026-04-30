@@ -1,0 +1,83 @@
+<section class="page">
+  <a class="back" routerLink="/watchlists">Back to watchlists</a>
+
+  @if (loading()) {
+    <p class="state">Loading watchlist...</p>
+  } @else if (watchlist(); as current) {
+    <header class="page__header">
+      <div>
+        <p class="eyebrow">Watchlist detail</p>
+        <h1>{{ current.name }}</h1>
+        <p class="lead">{{ current.stocks.length }} symbols currently tracked.</p>
+      </div>
+    </header>
+
+    <section class="adder">
+      <label>
+        <span>Add symbol</span>
+        <input type="text" [formControl]="symbol" list="catalog" placeholder="AAPL" />
+      </label>
+      <button type="button" (click)="addStock()" [disabled]="symbol.invalid || saving()">{{ saving() ? 'Saving...' : 'Add stock' }}</button>
+      <button type="button" class="secondary" (click)="syncQuotes()" [disabled]="syncing()">{{ syncing() ? 'Syncing...' : 'Sync quotes' }}</button>
+      <datalist id="catalog">
+        @for (stock of filteredCatalog(); track stock.id) {
+          <option [value]="stock.symbol">{{ stock.displaySymbol }} {{ stock.description ?? '' }}</option>
+        }
+      </datalist>
+    </section>
+
+    @if (message()) {
+      <p class="state state--message">{{ message() }}</p>
+    }
+
+    @if (syncSummary()) {
+      <p class="state">{{ syncSummary() }}</p>
+    }
+
+    @if (syncFailedSymbols().length > 0) {
+      <p class="state state--error">Failed symbols: {{ syncFailedSymbols().join(', ') }}</p>
+    }
+
+    @if (hasStocks()) {
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Display</th>
+              <th>Description</th>
+              <th>Current</th>
+              <th>Previous</th>
+              <th>Change</th>
+              <th>%</th>
+              <th>Fetched</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (stock of current.stocks; track stock.id) {
+              @let quote = quoteForSymbol(stock.symbol);
+              <tr>
+                <td>{{ stock.symbol }}</td>
+                <td>{{ stock.displaySymbol }}</td>
+                <td>{{ stock.description ?? '-' }}</td>
+                <td>{{ quote?.currentPrice ?? '-' }}</td>
+                <td>{{ quote?.previousClosePrice ?? '-' }}</td>
+                <td>{{ quote?.change ?? '-' }}</td>
+                <td>{{ quote?.percentChange ?? '-' }}</td>
+                <td>{{ quote?.fetchedAtUtc ?? '-' }}</td>
+                <td><button type="button" class="inline-button" (click)="removeStock(stock.symbol)" [disabled]="saving()">Remove</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <section class="empty-state">
+        <p>No stocks in this watchlist yet.</p>
+      </section>
+    }
+  } @else {
+    <p class="state state--error">Watchlist not found.</p>
+  }
+</section>

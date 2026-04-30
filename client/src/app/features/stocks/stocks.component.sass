@@ -1,0 +1,107 @@
+.page
+  display: grid
+  gap: 1.25rem
+
+.page__header
+  display: flex
+  justify-content: space-between
+  gap: 1rem
+  align-items: end
+  flex-wrap: wrap
+
+.eyebrow
+  text-transform: uppercase
+  letter-spacing: .12em
+  color: var(--accent)
+  font-size: .75rem
+
+  margin: .25rem 0 .5rem
+  font-size: clamp(2rem, 4vw, 3rem)
+
+.lead
+  color: var(--muted)
+  max-width: 60ch
+
+.summary
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))
+  gap: 1rem
+
+.summary-card
+  border: 1px solid var(--border)
+  border-radius: 1rem
+  padding: 1rem
+  background: var(--panel)
+  display: grid
+  gap: .35rem
+
+.summary-card span
+  color: var(--muted)
+  font-size: .875rem
+
+.summary-card strong
+  font-size: 1.5rem
+
+.summary-card select
+  border: 1px solid var(--border)
+  border-radius: .8rem
+  padding: .7rem .8rem
+  background: var(--bg)
+  color: var(--text)
+
+.search
+  display: grid
+  gap: .35rem
+  min-width: min(100%, 26rem)
+
+.search span
+  color: var(--muted)
+  font-size: .875rem
+
+input
+  border: 1px solid var(--border)
+  border-radius: 1rem
+  padding: .9rem 1rem
+  background: var(--panel)
+  color: var(--text)
+
+.table-card
+  overflow: auto
+  border: 1px solid var(--border)
+  border-radius: 1.25rem
+  background: var(--panel)
+
+table
+  width: 100%
+  border-collapse: collapse
+  min-width: 760px
+
+th, td
+  padding: .9rem 1rem
+  text-align: left
+  border-bottom: 1px solid var(--border)
+
+th
+  color: var(--muted)
+  font-weight: 600
+
+.inline-button
+  border: 1px solid var(--border)
+  background: var(--accent)
+  color: #041018
+  border-radius: 999px
+  padding: .45rem .85rem
+  font-weight: 700
+
+.inline-button:disabled
+  opacity: .5
+  cursor: not-allowed
+
+.state
+  padding: 1rem 0
+
+.state--error
+  color: var(--danger)
+
+.state--message
+  color: var(--accent)

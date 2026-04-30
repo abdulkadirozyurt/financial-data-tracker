@@ -1,0 +1,89 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <p class="eyebrow">Stock catalog</p>
+      <h1>Financial data tracker</h1>
+      <p class="lead">Search tracked instruments and inspect the backend catalog.</p>
+    </div>
+
+    <label class="search">
+      <span>Search</span>
+      <input
+        type="search"
+        [formControl]="search"
+        placeholder="Symbol, description, currency, type"
+      />
+    </label>
+  </header>
+
+  <section class="summary">
+    <article class="summary-card">
+      <span>Stocks on page</span>
+      <strong>{{ currentStocksCount() }}</strong>
+    </article>
+    <article class="summary-card">
+      <span>Total stocks</span>
+      <strong>{{ totalStocksCount() }}</strong>
+    </article>
+    <article class="summary-card">
+      <span>Target watchlist</span>
+      @if (loadingWatchlists()) {
+        <strong>Loading...</strong>
+      } @else if (hasWatchlists()) {
+        <select #watchlistSelect [value]="selectedWatchlistId()" (change)="onWatchlistChange(watchlistSelect.value)">
+          @for (watchlist of watchlists(); track watchlist.id) {
+            <option [value]="watchlist.id">{{ watchlist.name }}</option>
+          }
+        </select>
+      } @else {
+        <strong>No watchlists</strong>
+      }
+    </article>
+  </section>
+
+  @if (actionMessage()) {
+    <p class="state state--message">{{ actionMessage() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="state">Loading stocks...</p>
+  } @else if (error()) {
+    <p class="state state--error">{{ error() }}</p>
+  } @else {
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Display</th>
+            <th>Description</th>
+            <th>Currency</th>
+            <th>Type</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (stock of stockItems(); track stock.id) {
+            <tr>
+              <td>{{ stock.symbol }}</td>
+              <td>{{ stock.displaySymbol }}</td>
+              <td>{{ stock.description ?? '-' }}</td>
+              <td>{{ stock.currency ?? '-' }}</td>
+              <td>{{ stock.type ?? '-' }}</td>
+              <td>
+                <button type="button" class="inline-button" (click)="addStock(stock)" [disabled]="!selectedWatchlistId() || addingSymbol() === stock.symbol">{{ addingSymbol() === stock.symbol ? 'Adding...' : 'Add' }}</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination
+      [currentPage]="stocksPage()"
+      [pageSize]="stocksPageSize()"
+      [totalCount]="totalStocksCount()"
+      (pageChange)="onPageChange($event)"
+    />
+  }
+</section>

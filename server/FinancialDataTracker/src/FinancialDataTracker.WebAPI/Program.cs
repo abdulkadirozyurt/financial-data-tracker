@@ -39,7 +39,7 @@ app.Run();
 
 static async Task MigrateDatabaseAsync(IServiceProvider services)
 {
-    const int maxAttempts = 10;
+    const int maxAttempts = 20;
     var delay = TimeSpan.FromSeconds(5);
 
     for (var attempt = 1; attempt <= maxAttempts; attempt++)

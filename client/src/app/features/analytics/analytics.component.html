@@ -1,0 +1,43 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <p class="eyebrow">Analytics</p>
+      <h1>Market movers</h1>
+      <p class="lead">Track gainers and losers from the latest synced quote snapshots.</p>
+    </div>
+
+    <div class="toggle">
+      <button type="button" [class.active]="direction() === 'gainers'" (click)="setDirection('gainers')">Gainers</button>
+      <button type="button" [class.active]="direction() === 'losers'" (click)="setDirection('losers')">Losers</button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="state">Loading movers...</p>
+  } @else if (error()) {
+    <p class="state state--error">{{ error() }}</p>
+  } @else if (!hasMovers()) {
+    <section class="empty-state">
+      <p>No movers yet.</p>
+      <p class="muted">Sync quotes in a watchlist first, then return here.</p>
+    </section>
+  } @else {
+    <div class="cards">
+      @for (mover of movers(); track mover.symbol) {
+        <article class="card">
+          <div class="row">
+            <strong>{{ mover.symbol }}</strong>
+            <span class="change" [class.negative]="mover.percentChange < 0">{{ mover.percentChange }}%</span>
+          </div>
+          <p>{{ mover.displaySymbol }}</p>
+          <p class="muted">{{ mover.description ?? '-' }}</p>
+          <div class="row row--small">
+            <span>Current {{ mover.currentPrice }}</span>
+            <span>Prev {{ mover.previousClosePrice }}</span>
+            <span>{{ mover.fetchedAtUtc }}</span>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

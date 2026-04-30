@@ -1,0 +1,54 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <p class="eyebrow">Watchlists</p>
+      <h1>Portfolio snapshots</h1>
+      <p class="lead">Create and manage watchlists, then drill into their tracked symbols.</p>
+    </div>
+
+    <a class="button" routerLink="/watchlists/new">New watchlist</a>
+  </header>
+
+  @if (loading()) {
+    <p class="state">Loading watchlists...</p>
+  } @else if (error()) {
+    <p class="state state--error">{{ error() }}</p>
+  } @else {
+    <section class="summary">
+      <article class="summary-card">
+        <span>Watchlists</span>
+        <strong>{{ watchlists().length }}</strong>
+      </article>
+      <article class="summary-card">
+        <span>Tracked symbols</span>
+        <strong>{{ totalStocks() }}</strong>
+      </article>
+    </section>
+
+    @if (hasWatchlists()) {
+      <div class="grid">
+        @for (watchlist of watchlists(); track watchlist.id) {
+          <article class="card">
+            <h2>{{ watchlist.name }}</h2>
+            <p>{{ watchlist.stocks.length }} tracked stocks</p>
+            @if (watchlist.stocks.length > 0) {
+              <div class="symbols">
+                @for (stock of watchlist.stocks.slice(0, 4); track stock.id) {
+                  <span>{{ stock.symbol }}</span>
+                }
+              </div>
+            } @else {
+              <p class="muted">No symbols yet.</p>
+            }
+            <a [routerLink]="['/watchlists', watchlist.id]">Open</a>
+          </article>
+        }
+      </div>
+    } @else {
+      <section class="empty-state">
+        <p>No watchlists yet.</p>
+        <a class="button" routerLink="/watchlists/new">Create one</a>
+      </section>
+    }
+  }
+</section>

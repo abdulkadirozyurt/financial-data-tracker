@@ -1,0 +1,21 @@
+<section class="page">
+  <div>
+    <p class="eyebrow">New watchlist</p>
+    <h1>Create a portfolio list</h1>
+  </div>
+
+  <form class="form" (ngSubmit)="submit()">
+    <label>
+      <span>Name</span>
+      <input type="text" [formControl]="name" placeholder="Long-term holdings" />
+    </label>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="name.invalid || loading()">
+      {{ loading() ? 'Creating...' : 'Create watchlist' }}
+    </button>
+  </form>
+</section>

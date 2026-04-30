@@ -1,203 +1,114 @@
 # Financial Data Tracker
 
-## Purpose
+Financial Data Tracker is a layered ASP.NET Core Web API for tracking stocks, watchlists, quote snapshots, and simple market movement analytics.
 
-Financial Data Tracker is a small internal finance tool built for the Rasyonet backend case study.
+The application synchronizes stock market data from Finnhub, stores it in SQL Server with Entity Framework Core, and exposes REST endpoints for stock search, watchlist management, quote snapshot synchronization, and top mover analysis.
 
-The current product direction is a stock watchlist workflow:
+## Core Capabilities
 
-- sync a US stock catalog from Finnhub
-- persist stock and watchlist data in SQL Server
-- expose REST endpoints through ASP.NET Core Web API
-- let users create watchlists and attach tracked stocks
-
-The intended end state of the MVP is to also store quote snapshots and expose a simple analytics view such as top gainers / top losers.
-
-## API Choice
-
-This project uses **Finnhub** as the external financial data source.
-
-Reason:
-
-- practical free tier for an internship case study
-- simple stock symbol catalog endpoint
-- simple quote endpoint
-- enough scope for a small internal finance tool without overbuilding
-
-Current Finnhub usage in the codebase:
-
-- `/stock/symbol` for stock catalog synchronization
-- `/quote` support exists in the client service layer, but quote snapshot API flow is not finished yet
-
-## Database Choice
-
-This project uses **SQL Server** with **Entity Framework Core**.
-
-Reason:
-
-- it fits the current layered .NET backend structure well
-- EF Core migrations are already in place
-- stock, watchlist, and quote snapshot entities map naturally to a relational model
-
-Core persisted entities:
-
-- `Stock`
-- `Watchlist`
-- `StockQuoteSnapshot`
+- US stock catalog synchronization from Finnhub
+- Persisted stock, watchlist, and quote snapshot data
+- Watchlist creation and stock membership management
+- Quote snapshot synchronization for watchlists
+- Automatic quote snapshot refresh through a hosted background service
+- Top gainers / top losers analytics based on latest stored snapshots
+- Swagger / OpenAPI support in Development mode
 
 ## Tech Stack
 
-- .NET 10 Web API
-- ASP.NET Core
+- .NET 10
+- ASP.NET Core Web API
 - Entity Framework Core
 - SQL Server
 - Finnhub API
 - Swagger / OpenAPI
 
-Backend solution structure:
+## Architecture
 
-- `server/FinancialDataTracker/src/FinancialDataTracker.WebAPI`
-- `server/FinancialDataTracker/src/FinancialDataTracker.Business`
-- `server/FinancialDataTracker/src/FinancialDataTracker.DataAccess`
-- `server/FinancialDataTracker/src/FinancialDataTracker.Entities`
-- `server/FinancialDataTracker/src/FinancialDataTracker.Core`
+The backend is separated into focused layers:
 
-## Design Pattern
+- `FinancialDataTracker.WebAPI`: controllers, middleware, hosted background services
+- `FinancialDataTracker.Business`: application services and use case orchestration
+- `FinancialDataTracker.DataAccess`: EF Core repositories, database context, external API client
+- `FinancialDataTracker.Entities`: domain entities and API DTOs
+- `FinancialDataTracker.Core`: shared abstractions and exception types
 
-This project uses the **Repository Pattern**.
+Controllers delegate work to business services. Business services coordinate repositories and external API services. Repositories isolate EF Core query and persistence details.
 
-Purpose:
+## External API
 
-- isolate EF Core query details from business services
-- keep controllers free of persistence logic
-- make business services express use cases instead of database access details
+The project uses Finnhub as the financial data provider.
 
-The repository implementation contains an inline comment explicitly naming the pattern, which was a requirement in the case study.
+Finnhub integration currently covers:
 
-## Current Status
+- stock symbol catalog retrieval through `/stock/symbol`
+- stock quote retrieval through `/quote`
 
-Implemented backend capabilities:
+Stock catalog data is synchronized by a hosted service. Quote data is stored as snapshots and can be synchronized manually through the API or automatically by the quote snapshot hosted service.
 
-- layered project structure
-- SQL Server persistence with EF Core migrations
-- stock catalog synchronization service using Finnhub
-- paged stock listing endpoint
-- watchlist create/read/add/remove service flow
-- watchlist controller endpoints
-- Swagger wiring
-- exception middleware
+## Database
 
-Still incomplete:
+The project uses SQL Server with Entity Framework Core.
 
-- quote snapshot sync endpoint
-- analytics/top movers endpoint
-- frontend integration
-- final cleanup of some warnings and middleware polish
+Main persisted entities:
 
-## Setup
+- `Stock`
+- `Watchlist`
+- `StockQuoteSnapshot`
 
-### Prerequisites
+`Stock` stores catalog-level information such as symbol, display symbol, description, currency, and type. `Watchlist` stores user-defined stock groups. `StockQuoteSnapshot` stores point-in-time quote data used by analytics.
 
-- .NET 10 SDK
-- SQL Server or LocalDB
-- a Finnhub API key
+## Background Services
 
-### Local Configuration
+`StockSyncHostedService` synchronizes the stock catalog from Finnhub.
 
-Do not commit real secrets.
+`QuoteSnapshotSyncHostedService` refreshes quote snapshots for watchlists that contain at least one stock. It starts shortly after application startup and repeats on a fixed interval.
 
-Use `appsettings.Development.json`, `user-secrets`, or environment variables for local values.
+## REST API
 
-Example `appsettings.json` placeholders:
-
-```json
-{
-  "ConnectionStrings": {
-    "SqlServer": "Server=localhost;Database=FinancialDataTrackerDb;User Id=sa;Password=YOUR_PASSWORD;TrustServerCertificate=True;"
-  },
-  "FinnhubApiCredentials": {
-    "BaseUrl": "https://finnhub.io/api/v1",
-    "ApiKey": "YOUR_FINNHUB_API_KEY"
-  }
-}
-```
-
-Example `user-secrets` commands:
-
-```powershell
-dotnet user-secrets set "FinnhubApiCredentials:ApiKey" "YOUR_KEY" --project .\server\FinancialDataTracker\src\FinancialDataTracker.WebAPI
-dotnet user-secrets set "ConnectionStrings:SqlServer" "YOUR_CONNECTION_STRING" --project .\server\FinancialDataTracker\src\FinancialDataTracker.WebAPI
-```
-
-Example environment variables:
-
-```powershell
-$env:FinnhubApiCredentials__ApiKey="YOUR_KEY"
-$env:ConnectionStrings__SqlServer="YOUR_CONNECTION_STRING"
-```
-
-## Run
-
-Restore and build:
-
-```powershell
-cd .\server\FinancialDataTracker
-dotnet restore
-dotnet build .\FinancialDataTracker.slnx
-```
-
-Apply database migrations:
-
-```powershell
-dotnet ef database update --project .\src\FinancialDataTracker.DataAccess --startup-project .\src\FinancialDataTracker.WebAPI
-```
-
-Run the API:
-
-```powershell
-dotnet run --project .\src\FinancialDataTracker.WebAPI
-```
-
-Swagger / OpenAPI is configured for Development mode.
-
-Important note:
-
-- `Program.cs` currently maps controllers only inside the Development block.
-- That means local development is the expected run mode right now.
-
-## Current API
-
-Implemented endpoints in the current repository:
+### Stocks
 
 - `GET /api/stocks?search=AAPL&pageNumber=1&pageSize=20`
+
+### Watchlists
+
 - `GET /api/watchlists`
 - `GET /api/watchlists/{id}`
 - `POST /api/watchlists`
 - `POST /api/watchlists/{id}/stocks/{symbol}`
 - `DELETE /api/watchlists/{id}/stocks/{symbol}`
 
-Behavior summary:
+### Quotes
 
-- `GET /api/stocks` returns paged stock data from persisted records
-- watchlist endpoints allow create, read, add stock, and remove stock flows
-
-## Planned API
-
-These are part of the intended MVP but are not finished yet:
-
-- `POST /api/stocks/sync?exchange=US` as a manual sync endpoint
 - `POST /api/quotes/sync/watchlists/{watchlistId}`
+
+### Analytics
+
 - `GET /api/analytics/top-movers?direction=gainers&limit=5`
 - `GET /api/analytics/top-movers?direction=losers&limit=5`
 
-At the moment, stock catalog sync is driven by the hosted service rather than a manual controller endpoint.
+## Configuration
 
-## Trade-offs
+The API expects a SQL Server connection string and Finnhub API credentials.
 
-- authentication is intentionally out of scope
-- portfolio quantity / P&L tracking is out of scope
-- quote snapshot and analytics flows are planned but not finished yet
-- the backend is the priority; the Angular client is bonus scope
-- some infrastructure is functional but still needs cleanup before final submission polish
+Configuration keys:
 
-This is intentionally being kept as a small, focused internal tool rather than a broad financial platform.
+- `ConnectionStrings:SqlServer`
+- `FinnhubApiCredentials:BaseUrl`
+- `FinnhubApiCredentials:ApiKey`
+
+Swagger and OpenAPI mappings are enabled in Development mode.
+
+## Design Pattern
+
+The project uses the Repository Pattern for database access.
+
+Repository abstractions keep EF Core details outside controllers and business services. Shared CRUD-style operations live in a generic repository, while entity-specific queries are implemented in specialized repositories such as stock, watchlist, and quote snapshot repositories.
+
+This keeps persistence concerns isolated and lets business services focus on application use cases.
+
+## Current Scope
+
+The backend currently focuses on stock catalog data, watchlists, quote snapshots, and top mover analytics.
+
+Authentication, portfolio quantity tracking, realized/unrealized P&L, and frontend integration are outside the current backend scope.

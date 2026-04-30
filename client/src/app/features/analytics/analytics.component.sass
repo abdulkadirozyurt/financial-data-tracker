@@ -1,0 +1,83 @@
+.page
+  display: grid
+  gap: 1.25rem
+
+.page__header
+  display: flex
+  justify-content: space-between
+  gap: 1rem
+  align-items: end
+  flex-wrap: wrap
+
+.eyebrow
+  text-transform: uppercase
+  letter-spacing: .12em
+  color: var(--accent)
+  font-size: .75rem
+
+h1
+  margin: .25rem 0 .5rem
+  font-size: clamp(2rem, 4vw, 3rem)
+
+.lead
+  color: var(--muted)
+
+.toggle
+  display: flex
+  gap: .5rem
+
+.toggle button
+  border: 1px solid var(--border)
+  background: var(--panel)
+  color: var(--text)
+  border-radius: 999px
+  padding: .75rem 1rem
+
+.toggle button.active
+  background: var(--accent)
+  color: #041018
+
+.cards
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))
+  gap: 1rem
+
+.card
+  border: 1px solid var(--border)
+  border-radius: 1.25rem
+  background: var(--panel)
+  padding: 1rem
+
+.row
+  display: flex
+  justify-content: space-between
+  gap: 1rem
+
+.row--small
+  color: var(--muted)
+  font-size: .875rem
+  flex-wrap: wrap
+
+.change
+  color: var(--accent)
+
+.change.negative
+  color: var(--danger)
+
+.muted
+  color: var(--muted)
+
+.state
+  color: var(--muted)
+
+.state--error
+  color: var(--danger)
+
+.empty-state
+  border: 1px dashed var(--border)
+  border-radius: 1.25rem
+  padding: 1.25rem
+  background: var(--panel)
+
+.muted
+  color: var(--muted)
